@@ -25,18 +25,10 @@ export const SocketProvider = ({ user, children }) => {
       setSocket(newSocket);
 
       // Clean up the connection when the component unmounts or the user logs out.
-<<<<<<< HEAD
-      return () => newSocket.close();
-    } else if (socket) {
-      // If the user logs out, disconnect the socket.
-      socket.close();
-      setSocket(null);
-=======
       return () => {
         newSocket.close();
         setSocket(null);
       };
->>>>>>> a60a2c0 (fixed error in client production)
     }
   }, [user]); // This effect runs whenever the user's login state changes.
 
