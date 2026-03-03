@@ -5,7 +5,7 @@
 AlphaGrade/
 ├── client/          # React Frontend
 ├── server/          # Node.js + Express + Socket.IO Backend
-└── ai-service/      # Python + FastAPI Microservice for AI inference
+
 ```
 
 ## Technology Stack
@@ -23,23 +23,27 @@ AlphaGrade/
 
 ### Running the Services
 
-1. **Server (Express + Socket.IO)**:
+1. **AI Service (Large Language Model)**:
+   - Run the following command in your terminal to serve the Llama 3 model:
+   - `ollama run llama3`
+
+2. **Server (Express + Socket.IO)**:
    - Navigate to `server/` directory
    - Install dependencies: `npm install`
-   - Start the server: `npm start` or `node app.js`
+   - Start the server: `npm start` or `node server.js`
    - Server runs on http://localhost:5000
 
-2. **AI Service (FastAPI)**:
+3. **AI Service (FastAPI)**:
    - Navigate to `ai-service/` directory
    - Install dependencies: `pip install -r requirements.txt`
    - Start the service: `uvicorn main:app --reload`
    - Service runs on http://localhost:8000
    - Health check: GET http://localhost:8000/health
 
-3. **Client (React)**:
+4. **Client (React)**:
    - Navigate to `client/` directory
    - Install dependencies: `npm install`
-   - Start the app: `npm run dev`
+   - Start the app: `npm start`
    - App runs on http://localhost:3000
 
 ### Using Docker

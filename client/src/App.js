@@ -1,144 +1,125 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './components/Login';
-import Register from './components/Register';
+import AuthPage from './components/AuthPage';
 import FacultyDashboard from './components/FacultyDashboard';
 import StudentDashboard from './components/StudentDashboard';
 import ExamTaking from './components/ExamTaking';
+import AdminDashboard from './components/AdminDashboard';
+import ExamResult from './components/ExamResult';
+import CreateExam from './components/CreateExam';
+import FacultyExamResults from './components/FacultyExamResults';
+import { SocketProvider } from './contexts/SocketContext';
+import { useAuth } from './contexts/AuthContext';
+import api from './services/api';
+import { socket } from './socket';
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [showRegister, setShowRegister] = useState(false);
+// A more robust ProtectedRoute component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Verify token and set user
-      // For simplicity, we'll assume the token is valid
-      const role = JSON.parse(atob(token.split('.')[1])).role;
-      setUser({ role });
-    }
-  }, []);
-
-  const handleLogin = (role) => {
-    setUser({ role });
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-  };
-
-  const handleRegister = () => {
-    setShowRegister(false);
-  };
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            AlphaGrade
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Exam Management System
-          </p>
-        </div>
+    // If not logged in, redirect to the sign-in page
+    return <Navigate to="/signin" replace />;
+  }
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <div className="flex justify-center space-x-4 mb-6">
-              <button
-                onClick={() => setShowRegister(false)}
-                className={`py-2 px-4 rounded-md ${!showRegister ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              >
-                Login
-              </button>
-              <button
-                onClick={() => setShowRegister(true)}
-                className={`py-2 px-4 rounded-md ${showRegister ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              >
-                Register
-              </button>
-            </div>
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // If logged in but with the wrong role, redirect to their dashboard
+    return <Navigate to="/dashboard" replace />;
+  }
 
-            {showRegister ? (
-              <div>
-                <div className="flex justify-center space-x-4 mb-6">
-                  <button
-                    onClick={() => setShowRegister(true)}
-                    className="py-2 px-4 rounded-md bg-indigo-600 text-white"
-                  >
-                    Faculty
-                  </button>
-                  <button
-                    onClick={() => setShowRegister(true)}
-                    className="py-2 px-4 rounded-md bg-indigo-600 text-white"
-                  >
-                    Student
-                  </button>
-                </div>
-                <Register onRegister={handleRegister} role="faculty" />
-              </div>
-            ) : (
-              <div>
-                <div className="flex justify-center space-x-4 mb-6">
-                  <button
-                    onClick={() => setShowRegister(false)}
-                    className="py-2 px-4 rounded-md bg-indigo-600 text-white"
-                  >
-                    Faculty Login
-                  </button>
-                  <button
-                    onClick={() => setShowRegister(false)}
-                    className="py-2 px-4 rounded-md bg-indigo-600 text-white"
-                  >
-                    Student Login
-                  </button>
-                </div>
-                <Login onLogin={handleLogin} role="faculty" />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+  return children;
+};
+
+function App() {
+  const { user, loading, logout } = useAuth();
+
+  useEffect(() => {
+    // 1. Handle Socket Authentication Errors
+    const onConnectError = (err) => {
+      if (err.message === 'Authentication error' || err.message === 'invalid signature') {
+        logout();
+      }
+    };
+    socket.on('connect_error', onConnectError);
+
+    // 2. Handle API 401/403 Errors (Invalid Token)
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
     );
+
+    return () => {
+      socket.off('connect_error', onConnectError);
+      api.interceptors.response.eject(interceptor);
+    };
+  }, [logout]);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        <nav className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex">
-                <div className="flex-shrink-0 flex items-center">
+      <SocketProvider user={user}>
+        {user && (
+          <nav className="bg-white shadow sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between h-16">
+                <div className="flex items-center">
                   <h1 className="text-xl font-bold text-gray-900">AlphaGrade</h1>
                 </div>
-              </div>
-              <div className="flex items-center">
-                <button
-                  onClick={handleLogout}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Logout
-                </button>
+                <div className="flex items-center">
+                  <span className="text-gray-600 mr-4">Welcome, {user.name} ({user.role})</span>
+                  <button onClick={logout} className="btn-secondary">
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        )}
 
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route
-            path="/dashboard"
-            element={
-              user.role === 'faculty' ? <FacultyDashboard /> : <StudentDashboard />
-            }
-          />
-          <Route path="/exam/:examId" element={<ExamTaking />} />
+          {!user ? (
+            <>
+              <Route path="/signin" element={<AuthPage />} />
+              <Route path="/register" element={<AuthPage />} />
+              <Route path="*" element={<Navigate to="/signin" replace />} />
+            </>
+          ) : (
+            <>
+              {/* Authenticated Routes */}
+              <Route path="/dashboard" element={
+                user.role === 'Admin' ? <AdminDashboard /> : 
+                user.role === 'Faculty' ? <FacultyDashboard /> : 
+                <StudentDashboard />
+              } />
+              
+              {/* Student-only routes */}
+              <Route path="/exam/:examId" element={<ProtectedRoute allowedRoles={['Student']}><ExamTaking /></ProtectedRoute>} />
+              <Route path="/exam/:examId/result" element={<ProtectedRoute allowedRoles={['Student']}><ExamResult /></ProtectedRoute>} />
+              
+              {/* Faculty/Admin routes */}
+              <Route path="/faculty/create-exam" element={<ProtectedRoute allowedRoles={['Faculty', 'Admin']}><CreateExam /></ProtectedRoute>} />
+              <Route path="/faculty/edit-exam/:examId" element={<ProtectedRoute allowedRoles={['Faculty', 'Admin']}><CreateExam /></ProtectedRoute>} />
+              <Route path="/faculty/exam/:examId/results" element={<ProtectedRoute allowedRoles={['Faculty', 'Admin']}><FacultyExamResults /></ProtectedRoute>} />
+
+              {/* Redirect root and signin to dashboard if logged in */}
+              <Route path="/signin" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </>
+          )}
         </Routes>
-      </div>
+      </SocketProvider>
     </Router>
   );
 }
