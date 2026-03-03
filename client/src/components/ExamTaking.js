@@ -270,11 +270,7 @@ const ExamTaking = () => {
 
       return () => clearInterval(heartbeatInterval);
     }
-<<<<<<< HEAD
-  }, [hasStarted, socket, isSubmitted, examId, exam]);
-=======
   }, [hasStarted, socket, isSubmitted, examId, exam, user]);
->>>>>>> a60a2c0 (fixed error in client production)
 
   const enterFullscreen = async () => {
     try {
