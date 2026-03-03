@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
+=======
+import React, { useState, useEffect, useCallback } from 'react';
+>>>>>>> a60a2c0 (fixed error in client production)
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useSocket } from '../contexts/SocketContext';
@@ -50,6 +54,66 @@ const AdminDashboard = () => {
   const socket = useSocket();
   const { user } = useAuth();
 
+<<<<<<< HEAD
+=======
+  const fetchExams = useCallback(async () => {
+    try {
+      // Use the endpoint that returns ALL exams for admins
+      const { data } = await api.get('/exams/my-exams');
+      setExams(data || []);
+    } catch (error) {
+      console.error("Error fetching exams", error);
+    }
+  }, []);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const { data } = await api.get('/auth/users');
+      setUsers({ faculty: Array.isArray(data.faculty) ? data.faculty : [], students: Array.isArray(data.students) ? data.students : [], admins: Array.isArray(data.admins) ? data.admins : [] });
+    } catch (error) {
+      console.error("Error fetching users", error);
+    }
+  }, []);
+
+  const fetchResults = useCallback(async () => {
+    try {
+      const { data } = await api.get('/admin/results/overall');
+      setResults(data || []);
+    } catch (error) {
+      console.error("Error fetching results", error);
+    }
+  }, []);
+
+  const fetchQuestions = useCallback(async () => {
+    try {
+      const { data } = await api.get('/admin/questions');
+      setQuestions(data || []);
+    } catch (error) {
+      console.error("Error fetching questions", error);
+    }
+  }, []);
+
+  const fetchHealth = useCallback(async () => {
+    try {
+      const { data } = await api.get('/admin/health');
+      setHealth(data);
+    } catch (error) {
+      console.error("Error fetching health", error);
+    }
+  }, []);
+
+  const fetchData = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    try {
+      await Promise.all([fetchExams(), fetchUsers(), fetchResults(), fetchQuestions(), fetchHealth()]);
+    } catch (error) {
+      console.error("Error fetching dashboard data", error);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  }, [fetchExams, fetchUsers, fetchResults, fetchQuestions, fetchHealth]);
+
+>>>>>>> a60a2c0 (fixed error in client production)
   useEffect(() => {
     // Only show full-page loading on the very first load
     fetchData(exams.length === 0 && users.faculty.length === 0);
@@ -71,7 +135,11 @@ const AdminDashboard = () => {
         socket.off('admin:activity-broadcast');
       };
     }
+<<<<<<< HEAD
   }, [socket]);
+=======
+  }, [socket, fetchData, exams.length, users.faculty.length, fetchExams, fetchUsers, fetchResults]);
+>>>>>>> a60a2c0 (fixed error in client production)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -80,6 +148,7 @@ const AdminDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
+<<<<<<< HEAD
   const fetchData = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
@@ -137,6 +206,8 @@ const AdminDashboard = () => {
     }
   };
 
+=======
+>>>>>>> a60a2c0 (fixed error in client production)
   const handleMonitorExam = (examId) => {
     setMonitoringExamId(examId);
   };

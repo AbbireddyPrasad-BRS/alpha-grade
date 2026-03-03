@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from 'react';
+=======
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+>>>>>>> a60a2c0 (fixed error in client production)
 import { Link, useNavigate } from 'react-router-dom';
 import api, { getMyExams, getExamById } from '../services/api';
 import FacultyExamMonitor from './FacultyExamMonitor';
@@ -82,6 +86,29 @@ const FacultyDashboard = () => {
     }
   }, [user, currentUser]);
 
+<<<<<<< HEAD
+=======
+  const getExamEndTime = useCallback((exam) => {
+    if (exam.endTime) return new Date(exam.endTime);
+    if (exam.startTime && exam.durationMinutes) {
+      return new Date(new Date(exam.startTime).getTime() + exam.durationMinutes * 60000);
+    }
+    return null;
+  }, []);
+
+  const activeExams = useMemo(() => exams.filter(exam => {
+    const start = exam.startTime ? new Date(exam.startTime) : null;
+    const end = getExamEndTime(exam);
+    
+    // If no start time, assume it's active if not closed (or rely on status)
+    if (!start) return true; 
+    
+    return start <= currentTime && (!end || end > currentTime);
+  }), [exams, currentTime, getExamEndTime]);
+
+  const isExamActive = useCallback((exam) => activeExams.some(e => e._id === exam._id), [activeExams]);
+
+>>>>>>> a60a2c0 (fixed error in client production)
   // Poll for active sessions if selected exam is ongoing
   useEffect(() => {
     let interval;
@@ -98,7 +125,11 @@ const FacultyDashboard = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
+<<<<<<< HEAD
   }, [selectedExam, currentTime]);
+=======
+  }, [selectedExam, currentTime, isExamActive]);
+>>>>>>> a60a2c0 (fixed error in client production)
 
   // Clear error after 5 seconds to keep the UI clean
   useEffect(() => {
@@ -125,6 +156,7 @@ const FacultyDashboard = () => {
     }
   };
 
+<<<<<<< HEAD
   const viewReport = async (examId) => {
     try {
       const response = await getExamById(examId);
@@ -164,6 +196,37 @@ const FacultyDashboard = () => {
     }
   };
 
+=======
+  const deleteExam = async (examId) => {
+    const isAdmin = currentUser && currentUser.role === 'Admin';
+
+    // 1. Check Global Permission (Skip for Admin)
+    if (!isAdmin && currentUser && !currentUser.canDeleteExam) {
+      setError('delete permission disabled contact admin');
+      return;
+    }
+
+    // 2. Check Exam-Level Lock (Skip for Admin)
+    const examToDelete = exams.find(e => e._id === examId);
+    if (!isAdmin && examToDelete && !examToDelete.allowDeletion) {
+      setError('This exam is locked for deletion. Contact admin to unlock.');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to delete this exam?')) {
+      try {
+        await api.delete(`/exams/${examId}`);
+        if (socket) socket.emit('admin:exam-updated');
+        fetchExams(); // Refresh the list after deleting
+      } catch (err) {
+        const serverMessage = err?.response?.data?.message;
+        setError(serverMessage || 'Failed to delete the exam.');
+        console.error('Failed to delete exam', err.response || err);
+      }
+    }
+  };
+
+>>>>>>> a60a2c0 (fixed error in client production)
   const evaluateExam = async (examId) => {
     if (currentUser && !currentUser.canEvaluate) {
       setError('Evaluation permission disabled. Contact admin.');
@@ -197,6 +260,7 @@ const FacultyDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
+<<<<<<< HEAD
   const getExamEndTime = (exam) => {
     if (exam.endTime) return new Date(exam.endTime);
     if (exam.startTime && exam.durationMinutes) {
@@ -205,12 +269,15 @@ const FacultyDashboard = () => {
     return null;
   };
 
+=======
+>>>>>>> a60a2c0 (fixed error in client production)
   // Categorize exams
   const upcomingExams = exams.filter(exam => {
     if (!exam.startTime) return false;
     return new Date(exam.startTime) > currentTime;
   });
 
+<<<<<<< HEAD
   const activeExams = exams.filter(exam => {
     const start = exam.startTime ? new Date(exam.startTime) : null;
     const end = getExamEndTime(exam);
@@ -221,6 +288,8 @@ const FacultyDashboard = () => {
     return start <= currentTime && (!end || end > currentTime);
   });
 
+=======
+>>>>>>> a60a2c0 (fixed error in client production)
   const completedExams = exams.filter(exam => {
     const end = getExamEndTime(exam);
     if (!end) return false;
@@ -228,7 +297,10 @@ const FacultyDashboard = () => {
   }).sort((a, b) => getExamEndTime(b) - getExamEndTime(a));
 
   // Helper to determine status for the modal
+<<<<<<< HEAD
   const isExamActive = (exam) => activeExams.some(e => e._id === exam._id);
+=======
+>>>>>>> a60a2c0 (fixed error in client production)
   const isExamCompleted = (exam) => completedExams.some(e => e._id === exam._id);
 
   // Helper to determine exam status for display
