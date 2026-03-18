@@ -23,7 +23,7 @@ const FacultyDashboard = () => {
   const fetchProfile = useCallback(async () => {
     setIsProfileLoading(true);
     try {
-      const { data } = await api.get('/api/auth/profile');
+      const { data } = await api.get('api/auth/profile');
       setCurrentUser(data);
     } catch (err) {
       console.error('Failed to sync profile:', err);
