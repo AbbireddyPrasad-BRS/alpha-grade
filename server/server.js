@@ -21,7 +21,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Adjust for your client's URL
+    origin: "https://alpha-grade.netlify.app", // Adjust for your client's URL
     methods: ["GET", "POST"]
   }
 });
@@ -30,7 +30,11 @@ const io = new Server(server, {
 app.set('io', io);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'https://alpha-grade.netlify.app', // Note: No trailing slash at the end!
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true // Important if you use cookies or sessions
+}));
 app.use(express.json());
 
 // Connect to MongoDB
