@@ -52,6 +52,10 @@ const connectDB = async () => {
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 
+// Optional fallback to support frontend requests missing the /api prefix
+app.use('/auth', authRoutes);
+app.use('/exams', examRoutes);
+
 // Basic route for checking server status
 app.get('/', (req, res) => {
   res.send('AlphaGrade Server is running.');

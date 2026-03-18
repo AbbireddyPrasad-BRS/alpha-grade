@@ -14,7 +14,7 @@ const AuthPage = () => {
   useEffect(() => {
     const checkAdmin = async () => {
       try {
-        const { data } = await api.get('/auth/admin-exists');
+        const { data } = await api.get('api/auth/admin-exists');
         setAdminExists(data.exists);
       } catch (error) {
         console.error("Error checking admin existence:", error);
