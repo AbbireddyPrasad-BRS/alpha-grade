@@ -18,14 +18,14 @@ const FacultyDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentUser, setCurrentUser] = useState(user);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [isProfileLoading] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     // The backend does not have a GET /api/auth/profile endpoint.
     // To eliminate the 404 error in the network tab, we safely bypass 
     // the network request and use the cached user from AuthContext.
     if (user) setCurrentUser(user);
-  }, []);
+  }, [user]);
 
   const fetchExams = useCallback(async () => {
     setError('');
