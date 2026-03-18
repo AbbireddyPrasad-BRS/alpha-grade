@@ -23,7 +23,7 @@ const FacultyDashboard = () => {
   const fetchProfile = useCallback(async () => {
     setIsProfileLoading(true);
     try {
-      const { data } = await api.get('/auth/profile');
+      const { data } = await api.get('/api/auth/profile');
       setCurrentUser(data);
     } catch (err) {
       console.error('Failed to sync profile:', err);
@@ -108,7 +108,7 @@ const FacultyDashboard = () => {
     if (selectedExam && isExamActive(selectedExam)) {
         const fetchSessions = async () => {
           try {
-            const { data } = await api.get(`/exams/${selectedExam._id}/sessions`);
+            const { data } = await api.get(`/api/exams/${selectedExam._id}/sessions`);
             setActiveSessions(data);
           } catch (err) { console.error(err); }
         };
@@ -163,7 +163,7 @@ const FacultyDashboard = () => {
 
     if (window.confirm('Are you sure you want to delete this exam?')) {
       try {
-        await api.delete(`/exams/${examId}`);
+        await api.delete(`/api/exams/${examId}`);
         if (socket) socket.emit('admin:exam-updated');
         fetchExams(); // Refresh the list after deleting
       } catch (err) {
@@ -185,7 +185,7 @@ const FacultyDashboard = () => {
     try {
       setIsLoading(true);
       // Increase timeout for the frontend request as evaluation is slow
-      const response = await api.post(`/exams/${examId}/evaluate`, {}, { timeout: 120000 });
+      const response = await api.post(`/api/exams/${examId}/evaluate`, {}, { timeout: 120000 });
       alert(response.data.message);
       fetchExams(); // Refresh to update status
     } catch (err) {
