@@ -47,15 +47,15 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-indigo-700 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <span className="text-xl font-bold">AlphaGrade Admin</span>
-              <div className="ml-10 flex items-baseline space-x-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between py-4 md:h-16 gap-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 w-full">
+              <span className="text-xl font-bold whitespace-nowrap">AlphaGrade Admin</span>
+              <div className="flex items-baseline space-x-2 overflow-x-auto pb-2 md:pb-0 w-full no-scrollbar">
                 {navItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
                       activeTab === item.id ? 'bg-indigo-900 text-white' : 'text-indigo-100 hover:bg-indigo-600'
                     }`}
                   >
@@ -64,10 +64,10 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
-            <div>
+            <div className="flex-shrink-0">
               <button 
                 onClick={() => setActiveTab('exams')}
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
+                className="w-full md:w-auto bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold whitespace-nowrap"
               >
                 System Troubleshooting
               </button>

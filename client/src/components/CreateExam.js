@@ -61,9 +61,10 @@ const CreateExam = () => {
           
           let formattedStartTime = '';
           if (data.startTime) {
-            const date = new Date(data.startTime);
-            const offset = date.getTimezoneOffset() * 60000;
-            formattedStartTime = (new Date(date - offset)).toISOString().slice(0, 16);
+            // Properly format the UTC date from server into a local string for the datetime-local input
+            const d = new Date(data.startTime);
+            const pad = (n) => n.toString().padStart(2, '0');
+            formattedStartTime = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
           }
 
           // Map backend questions to form format
@@ -293,7 +294,9 @@ const CreateExam = () => {
         modelAnswer: q.modelAnswer
       }))));
       if (formData.startTime) {
-        payload.append('startTime', formData.startTime);
+        // Convert the local selection to a standardized UTC ISO string for the database
+        const utcStartTime = new Date(formData.startTime).toISOString();
+        payload.append('startTime', utcStartTime);
       }
       if (user?.role === 'Admin' && formData.facultyID) {
         payload.append('facultyID', formData.facultyID);

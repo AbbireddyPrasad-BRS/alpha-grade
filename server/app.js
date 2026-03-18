@@ -8,6 +8,7 @@ require('dotenv').config();
 // Import routes and socket handler
 const authRoutes = require('./routes/auth');
 const examRoutes = require('./routes/exams');
+const adminRoutes = require('./routes/admin');
 const initializeSocket = require('./socket');
 
 // Initialize app
@@ -15,14 +16,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://alpha-grade.netlify.app", // Adjust for your client's URL
+    origin: ["https://alpha-grade.netlify.app", "http://localhost:3000"],
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
 app.use(cors({
-    origin: 'https://alpha-grade.netlify.app',
+    origin: ['https://alpha-grade.netlify.app', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
@@ -47,10 +48,12 @@ connectDB();
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Optional fallback to support frontend requests missing the /api prefix
 app.use('/auth', authRoutes);
 app.use('/exams', examRoutes);
+app.use('/admin', adminRoutes);
 
 // Basic route for checking server status
 app.get('/', (req, res) => {

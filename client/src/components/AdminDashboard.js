@@ -431,9 +431,9 @@ const AdminDashboard = () => {
 
           {/* Live Activity Feed */}
           {activities.length > 0 && (
-            <div className="mt-6 bg-indigo-900 text-indigo-100 p-3 rounded-lg shadow-inner text-xs flex items-center gap-4 overflow-hidden">
-              <span className="font-bold bg-indigo-700 px-2 py-1 rounded animate-pulse">LIVE FEED</span>
-              <div className="flex gap-6 animate-marquee whitespace-nowrap">
+            <div className="mt-6 bg-indigo-900 text-indigo-100 p-3 rounded-lg shadow-inner text-xs flex flex-col sm:flex-row items-start sm:items-center gap-3 overflow-hidden">
+              <span className="font-bold bg-indigo-700 px-2 py-1 rounded animate-pulse whitespace-nowrap">LIVE FEED</span>
+              <div className="flex gap-6 animate-marquee whitespace-nowrap overflow-x-auto w-full pb-1 sm:pb-0 no-scrollbar">
                 {activities.map((act, i) => (
                   <span key={i}>
                     <span className="opacity-60">[{act.time}]</span> {act.message}
@@ -448,8 +448,8 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b border-gray-200 mb-6 overflow-x-auto custom-scrollbar">
+          <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max pb-1">
             <button onClick={() => setActiveTab('exams')} className={`${activeTab === 'exams' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'} whitespace-nowrap py-4 px-1 border-b-2 font-medium`}>
               Exam Management
             </button>
@@ -499,7 +499,7 @@ const AdminDashboard = () => {
                   &times;
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 mb-6 bg-gray-50 p-4 rounded-lg">
                 <p><strong>Max Marks:</strong> {selectedExam.maxMarks}</p>
                 <p><strong>Pass Marks:</strong> {selectedExam.passMarks}</p>
                 <p><strong>Duration:</strong> {selectedExam.durationMinutes} mins</p>
@@ -562,13 +562,13 @@ const AdminDashboard = () => {
               </div>
               <ul className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
                 {users.faculty.map(user => (
-                  <li key={user._id} className="px-4 py-4 flex justify-between items-center hover:bg-gray-50">
+                  <li key={user._id} className="px-4 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:bg-gray-50">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-sm text-gray-500">{user.email}</p>
                       <p className="text-xs text-gray-400">System ID: {user._id}</p>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 self-start sm:self-auto">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                         {user.department || 'Faculty'}
                       </span>
@@ -588,19 +588,19 @@ const AdminDashboard = () => {
               </div>
               <ul className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
                 {users.students.map(user => (
-                  <li key={user._id} className="px-4 py-4 flex justify-between items-center hover:bg-gray-50">
+                  <li key={user._id} className="px-4 py-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:bg-gray-50">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
                       <p className="text-sm text-gray-500">{user.email}</p>
                       <p className="text-xs text-gray-400">System ID: {user._id}</p>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center flex-wrap gap-2 sm:gap-4 self-start sm:self-auto">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                         Student
                       </span>
                       {user.enrollmentNumber && <span className="text-xs text-gray-500">ID: {user.enrollmentNumber}</span>}
-                      <button onClick={() => handleEditUser(user)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Edit</button>
-                      <button onClick={() => handleDeleteUser(user._id, 'Student')} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                      <button onClick={() => handleEditUser(user)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium ml-2">Edit</button>
+                      <button onClick={() => handleDeleteUser(user._id, 'Student')} className="text-red-600 hover:text-red-900 text-sm font-medium ml-2">Delete</button>
                     </div>
                   </li>
                 ))}
@@ -612,11 +612,11 @@ const AdminDashboard = () => {
 
         {activeTab === 'results' && (
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 border-b border-gray-200 bg-purple-50 flex justify-between items-center">
+            <div className="px-4 py-5 border-b border-gray-200 bg-purple-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
               <h3 className="text-lg font-medium text-purple-900">System-wide Results</h3>
               <button 
                 onClick={downloadResultsCSV}
-                className="text-xs bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 shadow-sm"
+                className="w-full sm:w-auto text-xs bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 shadow-sm"
               >
                 Download CSV Report
               </button>
@@ -625,28 +625,28 @@ const AdminDashboard = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exam</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Score</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Student</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Exam</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Score</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Date</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {results.length === 0 ? (
-                    <tr><td colSpan="5" className="px-6 py-10 text-center text-gray-500">No submissions found in the system.</td></tr>
+                    <tr><td colSpan="5" className="px-3 sm:px-6 py-10 text-center text-gray-500 text-sm">No submissions found in the system.</td></tr>
                   ) : (
                     results.map((res) => (
                       <tr key={res._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{res.studentId?.name || 'Unknown'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{res.examId?.subject || 'N/A'}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-gray-900">{res.totalScore} / {res.examId?.maxMarks || 0}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 text-xs font-bold rounded-full ${res.totalScore >= (res.examId?.passMarks || 0) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm font-medium text-gray-900">{res.studentId?.name || 'Unknown'}</td>
+                        <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm text-gray-500">{res.examId?.subject || 'N/A'}</td>
+                        <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm font-bold text-gray-900">{res.totalScore} / {res.examId?.maxMarks || 0}</td>
+                        <td className="px-3 sm:px-6 py-2 sm:py-4">
+                          <span className={`px-2 py-1 text-[10px] sm:text-xs font-bold rounded-full ${res.totalScore >= (res.examId?.passMarks || 0) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                             {res.totalScore >= (res.examId?.passMarks || 0) ? 'PASS' : 'FAIL'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{new Date(res.submittedAt).toLocaleDateString()}</td>
+                        <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm text-gray-500">{new Date(res.submittedAt).toLocaleDateString()}</td>
                       </tr>
                     ))
                   )}
@@ -663,16 +663,16 @@ const AdminDashboard = () => {
             </div>
             <ul className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
               {questions.map(q => (
-                <li key={q._id} className="p-4 hover:bg-gray-50 flex justify-between items-start">
-                  <div className="flex-grow pr-4">
+                <li key={q._id} className="p-4 hover:bg-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                  <div className="flex-grow pr-0 sm:pr-4">
                     <p className="text-sm font-medium text-gray-900">{q.text}</p>
-                    <div className="mt-1 flex gap-3 text-xs text-gray-500">
-                      <span>Domain: <strong>{q.domain}</strong></span>
-                      <span>Marks: <strong>{q.marks}</strong></span>
-                      <span>Difficulty: <strong>{q.difficulty}</strong></span>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+                      <span className="bg-gray-100 px-2 py-1 rounded">Domain: <strong>{q.domain}</strong></span>
+                      <span className="bg-gray-100 px-2 py-1 rounded">Marks: <strong>{q.marks}</strong></span>
+                      <span className="bg-gray-100 px-2 py-1 rounded">Difficulty: <strong>{q.difficulty}</strong></span>
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteQuestion(q._id)} className="text-red-600 hover:text-red-900 text-sm font-bold">Delete</button>
+                  <button onClick={() => handleDeleteQuestion(q._id)} className="self-end sm:self-auto text-red-600 hover:text-red-900 text-sm font-bold">Delete</button>
                 </li>
               ))}
             </ul>

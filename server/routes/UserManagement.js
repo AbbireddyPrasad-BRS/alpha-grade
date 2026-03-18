@@ -68,7 +68,7 @@ const UserManagement = () => {
     <div className="space-y-8">
       <section>
         <h3 className="text-xl font-bold mb-4">Faculty Control</h3>
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white shadow rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -94,7 +94,7 @@ const UserManagement = () => {
 
       <section>
         <h3 className="text-xl font-bold mb-4">Student Management</h3>
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white shadow rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -120,14 +120,14 @@ const UserManagement = () => {
 
       {selectedUser && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
+          <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-2xl m-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">User Details: {selectedUser.role}</h2>
               <button onClick={closeUserDetail} className="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
                   <input 

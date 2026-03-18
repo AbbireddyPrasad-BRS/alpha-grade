@@ -221,14 +221,14 @@ const ExamMonitor = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg shadow-sm border">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">{monitoringExam.subject}</h2>
             <p className="text-sm text-gray-500">Monitoring Live Session</p>
           </div>
           <button 
             onClick={() => { setMonitoringExamId(null); fetchExams(); }} 
-            className="bg-gray-800 text-white px-6 py-2 rounded-md hover:bg-gray-900 transition-colors font-semibold"
+            className="w-full sm:w-auto bg-gray-800 text-white px-6 py-2 rounded-md hover:bg-gray-900 transition-colors font-semibold"
           >
             Exit Monitor
           </button>
@@ -310,9 +310,9 @@ const ExamMonitor = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h3 className="text-xl font-bold text-gray-800">Exam Monitoring & Troubleshooting</h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <button onClick={handleForceSync} className="text-sm bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-1 rounded font-bold shadow-sm">
             Force System Sync
           </button>
@@ -323,7 +323,7 @@ const ExamMonitor = () => {
       {editingExam && (
         <div className="bg-indigo-50 p-6 rounded-lg border border-indigo-200 shadow-sm">
           <h4 className="font-bold text-indigo-900 mb-4">Troubleshoot Exam: {editingExam.subject}</h4>
-          <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <form onSubmit={handleUpdate} className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Start Time</label>
               <input 
@@ -354,7 +354,7 @@ const ExamMonitor = () => {
                 <option value="closed">Closed (Completed)</option>
               </select>
             </div>
-            <div className="md:col-span-3 flex justify-end space-x-3">
+            <div className="sm:col-span-3 flex justify-end space-x-3">
               <button 
                 type="button" 
                 onClick={() => setEditingExam(null)} 
@@ -373,7 +373,7 @@ const ExamMonitor = () => {
         </div>
       )}
 
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <div className="bg-white shadow-md rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
