@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const evaluateController = require('../models/evaluateController'); 
 require('dotenv').config();
 
 // Import routes and socket handler

@@ -175,7 +175,7 @@ const FacultyDashboard = () => {
       return;
     }
 
-    if (!window.confirm('Start AI evaluation for this exam? This process uses Llama 3 to grade student answers. It may take some time.')) return;
+    if (!window.confirm('Start AI evaluation for this exam? This process uses AI to grade student answers. It may take some time.')) return;
     
     try {
       setIsLoading(true);
@@ -185,7 +185,7 @@ const FacultyDashboard = () => {
       fetchExams(); // Refresh to update status
     } catch (err) {
       console.error('Evaluation failed', err);
-      const msg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Evaluation is taking longer than expected, but is running in the background.' : 'Failed to start evaluation. Ensure Llama 3 is running.');
+      const msg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Evaluation is taking longer than expected, but is running in the background.' : 'Failed to start evaluation. Ensure the AI service is accessible.');
       setError(msg);
       // Even if it times out on frontend, refresh list after a delay to see if updates happened
       setTimeout(fetchExams, 5000);

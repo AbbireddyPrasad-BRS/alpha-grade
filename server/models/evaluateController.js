@@ -1,6 +1,8 @@
 const Exam = require('./Exam');
 const StudentResponse = require('./StudentResponse');
-const ollama = require('ollama').default;
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
  * Shared logic to evaluate a set of answers against an exam definition
@@ -42,42 +44,40 @@ const performAiEvaluation = async (exam, answers) => {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         try {
-            const response = await ollama.chat({
-                model: 'llama3',
-                messages: [
-                    { 
-                        role: 'system', 
-                        content: `You are an extremely strict, pedantic academic evaluator. Your primary goal is to maintain high academic standards by identifying even minor inaccuracies, omissions, or lack of depth.
-
-                        Strict Evaluation Rules:
-                        1. Technical Accuracy: The answer must align perfectly with the Reference Answer. Deduct marks for any factual errors or vague terminology.
-                        2. Depth vs. Marks (Length Requirement):
-                           - 2-3 Marks: Requires at least 3-5 concise, accurate sentences.
-                           - 5 Marks: Requires at least 2-3 detailed paragraphs with specific examples.
-                           - 8-10 Marks: Requires a comprehensive, multi-paragraph explanation covering all aspects of the topic in depth.
-                        3. Length Penalty: Strictly penalize short answers. If a high-mark question (5+ marks) is answered with only a few sentences, cap the maximum possible score at 40% of the total marks, even if the content is technically correct.
-                        4. Rubric Adherence: If a specific rubric is provided, follow it with absolute precision.
-                        5. Tone: Be critical. If the student provides a "minimum effort" answer, reflect that in a low score and critical feedback.
-                        6. Technical keywords provided as the answer instead of the required detailed explanation should be marked with zero marks, as they indicate a lack of understanding.
-                        
-                        You MUST respond ONLY with a JSON object: {"score": number, "feedback": "string"}.` 
-                    },
-                    { 
-                        role: 'user', 
-                        content: `Question: ${questionText}
-                        Max Marks: ${maxMarks}
-                        Reference Model Answer: ${referenceAnswer || 'Not provided. Evaluate based on general technical accuracy.'}
-                        Specific Rubric: ${rubric || 'None provided. Use the strict depth-to-marks ratio rules.'}
-                        
-                        Student's Submitted Answer: "${studentAnswer}"
-                        
-                        Evaluate strictly based on the rules provided.` 
-                    }
-                ],
-                format: 'json',
+            const model = genAI.getGenerativeModel({
+                model: 'gemini-2.5-flash',
+                generationConfig: {
+                    responseMimeType: 'application/json',
+                }
             });
 
-            const result = JSON.parse(response.message.content);
+            const prompt = `System Instructions: You are an extremely strict, pedantic academic evaluator. Your primary goal is to maintain high academic standards by identifying even minor inaccuracies, omissions, or lack of depth.
+
+Strict Evaluation Rules:
+1. Technical Accuracy: The answer must align perfectly with the Reference Answer. Deduct marks for any factual errors or vague terminology.
+2. Depth vs. Marks (Length Requirement):
+   - 2-3 Marks: Requires at least 3-5 concise, accurate sentences.
+   - 5 Marks: Requires at least 2-3 detailed paragraphs with specific examples.
+   - 8-10 Marks: Requires a comprehensive, multi-paragraph explanation covering all aspects of the topic in depth.
+3. Length Penalty: Strictly penalize short answers. If a high-mark question (5+ marks) is answered with only a few sentences, cap the maximum possible score at 40% of the total marks, even if the content is technically correct.
+4. Rubric Adherence: If a specific rubric is provided, follow it with absolute precision.
+5. Tone: Be critical. If the student provides a "minimum effort" answer, reflect that in a low score and critical feedback.
+6. Technical keywords provided as the answer instead of the required detailed explanation should be marked with zero marks, as they indicate a lack of understanding.
+
+You MUST respond ONLY with a JSON object: {"score": number, "feedback": "string"}.
+
+Question: ${questionText}
+Max Marks: ${maxMarks}
+Reference Model Answer: ${referenceAnswer || 'Not provided. Evaluate based on general technical accuracy.'}
+Specific Rubric: ${rubric || 'None provided. Use the strict depth-to-marks ratio rules.'}
+
+Student's Submitted Answer: "${studentAnswer}"
+
+Evaluate strictly based on the rules provided.`;
+
+            const response = await model.generateContent(prompt);
+            const responseText = response.response.text();
+            const result = JSON.parse(responseText);
 
             // Ensure marksObtained is a valid number
             const rawScore = result.score;
@@ -88,7 +88,7 @@ const performAiEvaluation = async (exam, answers) => {
         } catch (err) {
             const errorDetail = err.message || 'Local AI inference failed.';
             console.error(`❌ AI Evaluation failed for question ${a.questionID}:`, errorDetail);
-            feedback = `Manual review required. AI service error: ${errorDetail}`;
+            feedback = `Manual review required. API service error: ${errorDetail}`;
         }
 
         processedAnswers.push({
@@ -259,38 +259,36 @@ exports.generateAiQuestions = async (req, res) => {
     try {
         const { topics, count, difficulty, domain } = req.body;
         
-        const response = await ollama.chat({
-            model: 'llama3',
-            messages: [
-                {
-                    role: 'system',
-                    content: `You are an expert academic examiner. Generate ${count || 5} descriptive questions for an exam. 
-                    The questions should be based on the following topics: ${Array.isArray(topics) ? topics.join(', ') : topics}.
-                    Difficulty level: ${difficulty || 'Medium'}.
-                    Domain: ${domain || 'General'}.
-
-                    Instructions:
-                    1. Questions must be descriptive and follow a format like: "Explain about [Topic] in detail with examples".
-                    2. Examples of desired question style:
-                       - Topic: "conditional statement" -> Question: "Explain about conditional statements in Python and Java with examples?"
-                       - Topic: "Newton's laws" -> Question: "Explain about Newton's laws of motion in detail with examples."
-                    3. Assign appropriate marks to each question (typically between 2 and 10).
-                    4. Provide a high-quality model answer for each question.
-                    
-                    You MUST respond ONLY with a JSON array of objects. Each object must strictly follow this structure:
-                    {
-                        "text": "The question text",
-                        "marks": number,
-                        "difficulty": "${difficulty || 'Medium'}",
-                        "domain": "${domain || 'General'}",
-                        "modelAnswer": "A detailed, accurate reference answer"
-                    }`
-                }
-            ],
-            format: 'json',
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            generationConfig: {
+                responseMimeType: 'application/json',
+            }
         });
 
-        const questions = JSON.parse(response.message.content);
+        const prompt = `You are an expert academic examiner. Generate ${count || 5} descriptive questions for an exam. 
+The questions should be based on the following topics: ${Array.isArray(topics) ? topics.join(', ') : topics}.
+Difficulty level: ${difficulty || 'Medium'}.
+Domain: ${domain || 'General'}.
+
+Instructions:
+1. Questions must be descriptive and follow a format like: "Explain about [Topic] in detail with examples".
+2. Examples of desired question style:
+   - Topic: "conditional statement" -> Question: "Explain about conditional statements in Python and Java with examples?"
+   - Topic: "Newton's laws" -> Question: "Explain about Newton's laws of motion in detail with examples."
+3. Assign appropriate marks to each question (typically between 2 and 10).
+4. Provide a high-quality model answer for each question.
+
+You MUST respond ONLY with a JSON array of objects. Each object must strictly follow this structure:
+{ "question": "The question text", "maxMarks": 5, "difficulty": "${difficulty || 'Medium'}", "subject": "${domain || 'General'}", "modelAnswer": "A detailed, accurate reference answer" }`;
+
+        const response = await model.generateContent(prompt);
+        let responseText = response.response.text();
+        
+        // Clean up markdown blocks if the model unexpectedly wraps the JSON
+        responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        const questions = JSON.parse(responseText);
         res.json(questions);
     } catch (error) {
         console.error('❌ AI Question Generation failed:', error);
@@ -305,21 +303,13 @@ exports.generateModelAnswer = async (req, res) => {
     try {
         const { questionText } = req.body;
         
-        const response = await ollama.chat({
-            model: 'llama3',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are an expert subject matter specialist. Generate an accurate, detailed, and comprehensive model answer for the provided question. The answer should serve as a high-quality reference for academic grading, covering all key points and technical details.'
-                },
-                {
-                    role: 'user',
-                    content: `Question: ${questionText}`
-                }
-            ]
-        });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        
+        const prompt = `System Instructions: You are an expert subject matter specialist. Generate an accurate, detailed, and comprehensive model answer for the provided question. The answer should serve as a high-quality reference for academic grading, covering all key points and technical details.\n\nQuestion: ${questionText}`;
 
-        res.json({ modelAnswer: response.message.content });
+        const response = await model.generateContent(prompt);
+        const responseText = response.response.text();
+        res.json({ modelAnswer: responseText });
     } catch (error) {
         console.error('❌ AI Model Answer Generation failed:', error);
         res.status(500).json({ message: 'Failed to generate model answer: ' + error.message });

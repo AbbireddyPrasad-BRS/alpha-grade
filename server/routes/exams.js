@@ -53,6 +53,20 @@ router.get('/faculties', protect, authorize('Admin'), async (req, res) => {
 });
 
 /**
+ * @route   POST /api/exams/generate-questions
+ * @desc    Generate exam questions using AI
+ * @access  Private (Faculty/Admin)
+ */
+router.post('/generate-questions', protect, authorize('Faculty', 'Admin'), evaluateController.generateAiQuestions);
+
+/**
+ * @route   POST /api/exams/generate-answer
+ * @desc    Generate a model answer for a question using AI
+ * @access  Private (Faculty/Admin)
+ */
+router.post('/generate-answer', protect, authorize('Faculty', 'Admin'), evaluateController.generateModelAnswer);
+
+/**
  * @route   POST /api/exams
  * @desc    Create a new exam
  * @access  Private (Faculty)

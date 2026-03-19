@@ -35,7 +35,6 @@ const CreateExam = () => {
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [llamaStatus, setLlamaStatus] = useState('checking');
   const [faculties, setFaculties] = useState([]);
 
   useEffect(() => {
@@ -141,25 +140,25 @@ const CreateExam = () => {
     }
   }, [formData, isEditing]);
 
-  // Check Llama 3 connection status
-  useEffect(() => {
-    const checkLlama = async () => {
-      try {
-        const res = await fetch('http://localhost:11434/api/tags');
-        if (res.ok) {
-          setLlamaStatus('connected');
-          console.log('llama3 connected');
-        } else {
-          setLlamaStatus('disconnected');
-          console.log('llama3 not connected');
-        }
-      } catch (err) {
-        setLlamaStatus('disconnected');
-        console.log('llama3 not connected');
-      }
-    };
-    checkLlama();
-  }, []);
+  // // Check Llama 3 connection status
+  // useEffect(() => {
+  //   const checkLlama = async () => {
+  //     try {
+  //       const res = await fetch('http://localhost:11434/api/tags');
+  //       if (res.ok) {
+  //         setLlamaStatus('connected');
+  //         console.log('llama3 connected');
+  //       } else {
+  //         setLlamaStatus('disconnected');
+  //         console.log('llama3 not connected');
+  //       }
+  //     } catch (err) {
+  //       setLlamaStatus('disconnected');
+  //       console.log('llama3 not connected');
+  //     }
+  //   };
+  //   checkLlama();
+  // }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -375,16 +374,11 @@ const CreateExam = () => {
     setFormData(prev => ({...prev, questions: newQuestions}));
   };
 
-  // --- Llama 3 Integration ---
+  // --- AI Integration ---
 
   const generateQuestionsWithAI = async () => {
     if (!aiTopicsInput.trim()) {
       setError('Please enter topics.');
-      return;
-    }
-
-    if (llamaStatus !== 'connected') {
-      setError('Llama 3 is not connected. Please run "ollama run llama3" in your terminal.');
       return;
     }
     
@@ -392,57 +386,22 @@ const CreateExam = () => {
     setError('');
     setGeneratedQuestions([]);
 
-    const prompt = `
-      Generate ${formData.numberOfQuestions} exam questions for the subject '${formData.subject}'.
-      Topics: ${aiTopicsInput}.
-      Difficulty: Mixed (Easy, Medium, Hard).
-      
-      Output strictly valid JSON array of objects. No other text.
-      Each object must have:
-      - "question": string
-      - "difficulty": string ("Easy", "Medium", or "Hard")
-      - "modelAnswer": string (short answer)
-      - "subject": string (use "${formData.subject}")
-    `;
-
     try {
-      // Attempt to call local Ollama instance
-      // Note: This requires the browser to have access to localhost:11434 (CORS enabled on Ollama)
-      const response = await fetch('http://localhost:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'llama3',
-          prompt: prompt,
-          stream: false,
-          format: 'json' // Enforce JSON mode if supported by the version, otherwise prompt handles it
-        })
+      const { data } = await api.post('/exams/generate-questions', {
+        topics: aiTopicsInput.split(',').map(t => t.trim()).filter(t => t),
+        count: formData.numberOfQuestions || 5,
+        difficulty: 'Mixed',
+        domain: formData.subject
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to connect to local Llama 3 model. Ensure "ollama run llama3" is running.');
-      }
-
-      const data = await response.json();
-      let jsonStr = data.response;
-      
-      // Clean up potential markdown code blocks if Llama adds them
-      const jsonMatch = jsonStr.match(/\[.*\]/s);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[0];
-      }
-
-      const parsedQuestions = JSON.parse(jsonStr);
-      
-      if (Array.isArray(parsedQuestions)) {
-        setGeneratedQuestions(parsedQuestions);
+      if (Array.isArray(data)) {
+        setGeneratedQuestions(data);
       } else {
         throw new Error('AI response was not a valid list of questions.');
       }
-
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Error generating questions with AI.');
+      setError(err.response?.data?.message || err.message || 'Error generating questions with AI.');
     } finally {
       setIsLoading(false);
     }
@@ -454,11 +413,6 @@ const CreateExam = () => {
       setError('Please enter the question text first.');
       return;
     }
-    
-    if (llamaStatus !== 'connected') {
-      setError('Llama 3 is not connected. Please run "ollama run llama3" in your terminal.');
-      return;
-    }
 
     setIsLoading(true);
     setError('');
@@ -466,30 +420,12 @@ const CreateExam = () => {
     // Set loading indication in the field
     handleQuestionChange(index, 'modelAnswer', 'Generating answer...');
 
-    const prompt = `
-      Question: "${q.question}"
-      Subject: "${q.subject || formData.subject}"
-      
-      Task: Provide a concise model answer for this question.
-      Output strictly the answer text only.
-    `;
-
     try {
-      const response = await fetch('http://localhost:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'llama3',
-          prompt: prompt,
-          stream: false
-        })
+      const { data } = await api.post('/exams/generate-answer', {
+        questionText: q.question
       });
 
-      if (!response.ok) throw new Error('Failed to generate answer');
-
-      const data = await response.json();
-      const answer = data.response.trim();
-
+      const answer = data.modelAnswer ? data.modelAnswer.trim() : '';
       handleQuestionChange(index, 'modelAnswer', answer);
     } catch (err) {
       console.error(err);
@@ -681,15 +617,7 @@ const CreateExam = () => {
           {/* Conditional UI for AI vs Manual */}
           {formData.creationMethod === 'AI' ? (
             <div>
-              <h2 className="text-xl font-semibold mb-4">AI Question Generation (Llama 3)</h2>
-              
-              {/* Llama Status Indicator */}
-              <div className="mb-4 flex items-center gap-2">
-                <span className={`h-3 w-3 rounded-full ${llamaStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                <span className="text-sm font-medium text-gray-700">
-                  {llamaStatus === 'connected' ? 'Llama 3 Connected' : 'Llama 3 Not Connected (Run "ollama run llama3")'}
-                </span>
-              </div>
+              <h2 className="text-xl font-semibold mb-4">AI Question Generation</h2>
               
               <div className="mb-6">
                 <label htmlFor="aiTopics" className="block text-sm font-medium text-gray-700 mb-1">

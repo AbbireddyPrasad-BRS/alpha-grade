@@ -338,7 +338,7 @@ const AdminDashboard = () => {
                 
                 <p className="text-xs text-gray-500 mb-4 flex items-center">
                   <span className="mr-1">👨‍🏫</span> 
-                  <span className="truncate">by {typeof exam.facultyID === 'object' ? exam.facultyID.name : 'Unknown'}</span>
+                  <span className="truncate">by {exam.facultyID?.name || 'Unknown'}</span>
                 </p>
 
                 <div className="space-y-3 mb-6 bg-gray-50 p-3 rounded-lg border border-gray-100">
