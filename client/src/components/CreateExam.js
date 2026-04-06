@@ -390,7 +390,7 @@ const CreateExam = () => {
       const { data } = await api.post('/exams/generate-questions', {
         topics: aiTopicsInput.split(',').map(t => t.trim()).filter(t => t),
         count: formData.numberOfQuestions || 5,
-        difficulty: 'Mixed',
+        difficulty: "Randomly varied. CRITICAL: The 'difficulty' field in the JSON MUST exactly be 'Easy', 'Medium', or 'Hard'. NEVER use 'Mixed'. Also, ensure the output is STRICTLY valid JSON without any markdown formatting or trailing commas.",
         domain: formData.subject
       });
 
